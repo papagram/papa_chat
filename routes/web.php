@@ -19,3 +19,8 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::apiResource('messages', 'MessagesController');
+
+Route::resource('games', 'GamesContorller');
+Route::resource('games/{game}/fleets', 'FleetsController');
+Route::resource('games/{game}/players', 'PlayersController');
+Route::apiResource('positions', 'PositionsController');
