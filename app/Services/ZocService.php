@@ -42,9 +42,9 @@ class ZocService
 
         foreach ($this->zoc as $hexNumber => $zocs) {
             foreach ($this->otherZoc as $otherHexNumber => $otherZocs) {
-                $intersect = collect($otherZocs)->intersect(collect($zocs));
-                if ($intersect->isNotEmpty()) {
-                    $this->ret[$hexNumber] = $intersect->values();
+                $contain = collect($otherZocs)->contains($hexNumber);
+                if ($contain) {
+                    $this->ret[] = $hexNumber;
                 }
             }
         }

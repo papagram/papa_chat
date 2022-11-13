@@ -12,12 +12,9 @@
 
         <p v-else>{{ message }}</p>
 
-        <div v-if="turn.status === 3">
-            <ul v-for="(values, index) in ret" :key="index">
-                <li v-for="(value, index2) in values" :key="index2">{{ value }}で戦闘が起こりました。</li>
-            </ul>
-        </div>
-
+        <ul  v-if="turn.status === 3">
+            <li v-for="(value, index) in ret" :key="index">{{ value }}で戦闘が起こりました。</li>
+        </ul>
     </div>
 </template>
 
