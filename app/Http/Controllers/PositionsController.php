@@ -50,37 +50,31 @@ class PositionsController extends Controller
             }
 
             $status = $turn->status;
+            $currentPlayerId = $turn->current_player_id;
             if ($turn->status === 1) {
                 $status = 2;
+                $currentPlayerId = $otherPlayer->id;
             } elseif ($turn->status === 2) {
                 $status = 3;
             }
 
-            $turn->fill(['game_id' => $inputs['game_id'], 'current_player_id' => $otherPlayer->id, 'number' => $turn->number, 'status' => $status]);
+            $turn->fill(['current_player_id' => $currentPlayerId, 'number' => $turn->number, 'status' => $status]);
             $turn->save();
             DB::commit();
+
+            broadcast(app(PositionsSent::class, compact('turn')));
+            broadcast(app(GameInformationChanged::class, compact('turn')));
         } catch (Throwable $e) {
             report($e);
             DB::rollBack();
-            dd($e->getMessage());
         }
 
-        broadcast(app(GameInformationChanged::class, compact('turn')));
-
-        $positions = Position::whereIn('fleet_id', $inputs['fleet_ids'])->where('turn_number', $turn->number)->get();
         if ($status === 3) {
+            $positions = Position::whereIn('fleet_id', $inputs['fleet_ids'])->where('turn_number', $turn->number)->get();
             $otherPlayer->load(['fleets']);
             $otherPositions = Position::whereIn('fleet_id', $otherPlayer->fleets->pluck('id'))->where('turn_number', $turn->number)->get();
             $ret = app(ZocService::class, compact('positions', 'otherPositions'))->handle();
-        }
-
-        broadcast(app(PositionsSent::class, compact('turn')));
-
-        if ($status === 3) {
             broadcast(app(ZocResponse::class, compact('ret')));
-
-            $turn->fill(['game_id' => $inputs['game_id'], 'current_player_id' => $inputs['player_id'], 'number' => $turn->number + 1, 'status' => 1]);
-            $turn->save();
         }
 
         return compact('turn');

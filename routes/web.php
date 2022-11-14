@@ -24,3 +24,4 @@ Route::resource('games', 'GamesContorller');
 Route::resource('games/{game}/fleets', 'FleetsController');
 Route::resource('games/{game}/players', 'PlayersController');
 Route::apiResource('positions', 'PositionsController');
+Route::apiResource('turns', 'TurnsController');

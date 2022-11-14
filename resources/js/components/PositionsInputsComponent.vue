@@ -12,9 +12,13 @@
 
         <p v-else>{{ message }}</p>
 
-        <ul  v-if="turn.status === 3">
-            <li v-for="(value, index) in ret" :key="index">{{ value }}で戦闘が起こりました。</li>
-        </ul>
+        <div v-if="turn.status === 3">
+            <ul>
+                <li v-for="(value, index) in ret" :key="index">{{ value }}で戦闘が起こりました。</li>
+            </ul>
+            <button class="btn btn-warning" @click="nextTurn">戦闘終了</button>
+        </div>
+
     </div>
 </template>
 
@@ -36,6 +40,7 @@
         },
 
         created() {
+            this.turn = this.game.turn;
             if (this.game.turn.current_player_id === this.player.id) {
                 this.isMyTurn = true;
             }
@@ -56,7 +61,13 @@
                 .catch(function (error) {
                     console.log(error);
                 });
-            }
+            },
+
+            nextTurn() {
+                axios.post('/turns/' + this.turn.id, {
+                    '_method': 'PATCH',
+                });
+            },
         },
 
         mounted() {
@@ -74,10 +85,19 @@
                     this.turn = response.turn;
                 })
                 .listen('ZocResponse', (response) => {
-                    console.log(response);
                     this.message = '判定結果';
 
                     this.ret = response.ret;
+                })
+                .listen('TurnFinished', (response) => {
+                    if (response.turn.current_player_id === this.player.id) {
+                        this.isMyTurn = true;
+                    } else {
+                        this.isMyTurn = false;
+                    }
+                    this.turn = response.turn;
+                    this.message = '相手の入力が終わるまでしばらくお待ちください…';
+                    this.ret = [];
                 });
         }
     }
