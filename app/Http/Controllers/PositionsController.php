@@ -79,7 +79,7 @@ class PositionsController extends Controller
         if ($status === 3) {
             broadcast(app(ZocResponse::class, compact('ret')));
 
-            $turn->fill(['game_id' => $inputs['game_id'], 'current_player_id' => $otherPlayer->id, 'number' => $turn->number + 1, 'status' => 1]);
+            $turn->fill(['game_id' => $inputs['game_id'], 'current_player_id' => $inputs['player_id'], 'number' => $turn->number + 1, 'status' => 1]);
             $turn->save();
         }
 

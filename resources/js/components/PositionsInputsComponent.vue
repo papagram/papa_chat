@@ -1,6 +1,5 @@
 <template>
     <div>
-        
         <form v-if="isMyTurn">
             <div class="form-group row" v-for="(fleet, index) in player.fleets" :key="fleet.id">
                 <label :for="'tf' + fleet.number" class="col-sm-2 col-form-label">TF{{ fleet.number }}</label>
