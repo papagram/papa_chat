@@ -4,7 +4,15 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <positions-inputs :game='@json($game)' :player='@json($player)'/>
+            <div class="row">
+                <div class="col-md-9">
+                    <positions-inputs :game='@json($game)' :player='@json($player)'/>
+                </div>
+                <div class="col-md-3">
+                    <p>情報</p>
+                    <game-information :game='@json($game)' :player='@json($player)'/>
+                </div>
+            </div>
         </div>
     </div>
 </div>

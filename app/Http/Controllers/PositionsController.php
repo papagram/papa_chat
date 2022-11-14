@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\GameInformationChanged;
 use App\Events\PositionsSent;
 use App\Events\ZocResponse;
 use App\Services\ZocService;
@@ -63,6 +64,8 @@ class PositionsController extends Controller
             DB::rollBack();
             dd($e->getMessage());
         }
+
+        broadcast(app(GameInformationChanged::class, compact('turn')));
 
         $positions = Position::whereIn('fleet_id', $inputs['fleet_ids'])->where('turn_number', $turn->number)->get();
         if ($status === 3) {

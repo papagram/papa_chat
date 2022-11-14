@@ -20,6 +20,7 @@ window.Vue = require('vue');
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('app', require('./components/AppComponent.vue').default);
+Vue.component('game-information', require('./components/GameInformationComponent.vue').default);
 Vue.component('positions-inputs', require('./components/PositionsInputsComponent.vue').default);
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 
