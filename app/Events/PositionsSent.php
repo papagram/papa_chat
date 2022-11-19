@@ -16,15 +16,19 @@ class PositionsSent implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $turn;
+    public $positions;
+    public $playerId;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Turn $turn)
+    public function __construct(Turn $turn, $positions, $playerId)
     {
         $this->turn = $turn;
+        $this->positions = $positions;
+        $this->playerId = $playerId;
     }
 
     /**

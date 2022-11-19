@@ -1,10 +1,11 @@
 <template>
     <div>
         <form v-if="isMyTurn">
-            <div class="form-group row" v-for="(fleet, index) in player.fleets" :key="fleet.id">
+            <div class="form-group row" v-for="(fleet, index) in player.fleets" :key="fleet.id" :class="{'has-error': hasError(index)}">
                 <label :for="'tf' + fleet.number" class="col-sm-2 col-form-label">TF{{ fleet.number }}</label>
                 <div class="col-sm-10">
-                    <input v-model="hexNumbers[index]" type="number" name="position[hex_numbers][]" class="form-control" :id="'tf' + fleet.number" placeholder="ヘクス番号を入力">
+                    <input v-model="hexNumbers[index]" @change="validate(index)" type="number" name="position[hex_numbers][]" class="form-control" :id="'tf' + fleet.number" placeholder="ヘクス番号を入力">
+                    <b><span v-if="hasError(index)" style="color: red;">そこには移動できません</span></b>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary" @click.prevent="send">決定</button>
@@ -43,7 +44,8 @@
         props: {
             game: Object,
             player: Object,
-            battleInformation: Object,
+            otherPlayer: Object,
+            battleInformation: [Object, Array],
         },
 
         data() {
@@ -53,11 +55,30 @@
                 message: '相手の入力が終わるまでしばらくお待ちください…',
                 turn: '',
                 myBattleInformation: [],
+                currentPositions: [],
+                errors: [],
             }
         },
 
         created() {
             this.turn = this.game.turn;
+
+            let myCurrentPositions = [];
+            _.each(this.player.fleets, (fleet) => {
+                _.each(fleet.positions, (position) => {
+                    myCurrentPositions.push(position.hex_number);
+                });
+            });
+
+            let otherCurrentPositions = [];
+            _.each(this.otherPlayer.fleets, (fleet) => {
+                _.each(fleet.positions, (position) => {
+                    otherCurrentPositions.push(position.hex_number);
+                });
+            });
+
+            this.currentPositions[this.player.id] = myCurrentPositions;
+            this.currentPositions[this.otherPlayer.id] = otherCurrentPositions;
 
             if (this.turn.status === 3) {
                 this.isMyTurn = false;
@@ -67,6 +88,10 @@
                 if (this.turn.current_player_id === this.player.id) {
                     this.isMyTurn = true;
                 }
+            }
+
+            for (let i = 0; i < this.player.fleets.length; i++) {
+                this.errors[i] = false;
             }
         },
 
@@ -92,11 +117,38 @@
                     '_method': 'PATCH',
                 });
             },
+
+            validate(index) {
+                const ret = _.includes(this.currentPositions[this.otherPlayer.id], parseInt(this.hexNumbers[index]));
+                if (ret) {
+                    this.errors.splice(index, 1, true);
+                } else {
+                    this.errors.splice(index, 1, false);
+                }
+            },
+
+            hasError(index) {
+                return this.errors[index];
+            },
         },
 
         mounted() {
             window.Echo.channel('player-channel')
                 .listen('PositionsSent', (response) => {
+                    let positions = [];
+                    if (parseInt(response.playerId) === this.player.id) {
+                        _.each(response.positions, (position) => {
+                            positions.push(position.hex_number);
+                        });
+                        this.currentPositions[this.player.id] = positions;
+                    } else {
+                        _.each(response.positions, (position) => {
+                            positions.push(position.hex_number);
+                        });
+                        console.log(positions);
+                        this.currentPositions[this.otherPlayer.id] = positions;
+                    }
+
                     if (response.turn.status !== 3) {
                         if (response.turn.current_player_id === this.player.id) {
                             this.isMyTurn = true;

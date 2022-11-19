@@ -41,8 +41,9 @@ class PositionsController extends Controller
             $otherPlayer = Player::where('game_id', $inputs['game_id'])->where('id', '<>', $inputs['player_id'])->first();
             $turn = Turn::find($inputs['turn_id']);
 
+            $positions = [];
             foreach ($inputs['hex_numbers'] as $index => $hexNumber) {
-                Position::create([
+                $positions[] = Position::create([
                     'fleet_id' => $inputs['fleet_ids'][$index],
                     'hex_number' => $hexNumber,
                     'turn_number' => $turn->number,
@@ -62,7 +63,7 @@ class PositionsController extends Controller
             $turn->save();
             DB::commit();
 
-            broadcast(app(PositionsSent::class, compact('turn')));
+            broadcast(app(PositionsSent::class, compact('turn', 'positions') + ['playerId' => $inputs['player_id']]));
             broadcast(app(GameInformationChanged::class, compact('turn')));
         } catch (Throwable $e) {
             report($e);

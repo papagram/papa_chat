@@ -6,7 +6,7 @@
         <div class="col-md-8">
             <div class="row">
                 <div class="col-md-9">
-                    <positions-inputs :game='@json($game)' :player='@json($player)' :battle-information='@json($battleInformation)'/>
+                    <positions-inputs :game='@json($game)' :player='@json($player)' :other-player='@json($otherPlayer)' :battle-information='@json($battleInformation)'/>
                 </div>
                 <div class="col-md-3">
                     <p>情報</p>

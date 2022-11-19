@@ -50,11 +50,75 @@ class PlayersController extends Controller
     public function show(Game $game, Player $player)
     {
         $game->load(['gameSetting', 'turn']);
-        $player->load([
-            'fleets.positions' => function ($query) {
-                $query->latest();
+
+        $turnNumber = $game->turn->number;
+        if ($game->turn->status === 1) {
+            $turnNumber = $turnNumber - 1;
+
+            $player->load([
+                'fleets.positions' => function ($query) use ($turnNumber) {
+                    $query->where('turn_number', $turnNumber);
+                },
+            ]);
+
+            $otherPlayer = Player::with([
+                'fleets.positions' => function ($query) use ($turnNumber) {
+                    $query->where('turn_number', $turnNumber);
+                },
+            ])
+            ->where('game_id', $game->id)
+            ->where('id', '<>', $player->id)
+            ->first();
+        } elseif ($game->turn->status === 2) {
+            if ($game->turn->current_player_id === $player->id) {
+                $prevTurnNumber = $turnNumber - 1;
+                $player->load([
+                    'fleets.positions' => function ($query) use ($prevTurnNumber) {
+                        $query->where('turn_number', $prevTurnNumber);
+                    },
+                ]);
+
+                $otherPlayer = Player::with([
+                    'fleets.positions' => function ($query) use ($turnNumber) {
+                        $query->where('turn_number', $turnNumber);
+                    },
+                ])
+                ->where('game_id', $game->id)
+                ->where('id', '<>', $player->id)
+                ->first();
+            } else {
+                $player->load([
+                    'fleets.positions' => function ($query) use ($turnNumber) {
+                        $query->where('turn_number', $turnNumber);
+                    },
+                ]);
+
+                $prevTurnNumber = $turnNumber - 1;
+                $otherPlayer = Player::with([
+                    'fleets.positions' => function ($query) use ($turnNumber) {
+                        $query->where('turn_number', $turnNumber);
+                    },
+                ])
+                ->where('game_id', $game->id)
+                ->where('id', '<>', $player->id)
+                ->first();
             }
-        ]);
+        } else {
+            $player->load([
+                'fleets.positions' => function ($query) use ($turnNumber) {
+                    $query->where('turn_number', $turnNumber);
+                },
+            ]);
+
+            $otherPlayer = Player::with([
+                'fleets.positions' => function ($query) use ($turnNumber) {
+                    $query->where('turn_number', $turnNumber);
+                },
+            ])
+            ->where('game_id', $game->id)
+            ->where('id', '<>', $player->id)
+            ->first();
+        }
 
         $battleInformation = [];
         if ($game->turn->status === 3) {
@@ -62,13 +126,12 @@ class PlayersController extends Controller
             $positions = Position::whereIn('fleet_id', $player->fleets->pluck('id'))->where('turn_number', $game->turn->number)->get();
 
             // 敵軍の艦隊位置を取得
-            $otherPlayer = Player::with(['fleets'])->where('game_id', $game->id)->where('id', '<>', $player->id)->first();
             $otherPositions = Position::with(['fleet'])->whereIn('fleet_id', $otherPlayer->fleets->pluck('id'))->where('turn_number', $game->turn->number)->get();
 
             $battleInformation = app(ZocService::class, compact('positions', 'otherPositions'))->handle();
         }
 
-        return view('players.show', compact('game', 'player', 'battleInformation'));
+        return view('players.show', compact('game', 'player', 'otherPlayer', 'battleInformation'));
     }
 
     /**
