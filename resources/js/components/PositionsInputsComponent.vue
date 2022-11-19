@@ -13,12 +13,28 @@
         <p v-else>{{ message }}</p>
 
         <div v-if="turn.status === 3">
-            <ul>
-                <li v-for="(value, index) in ret" :key="index">{{ value }}で戦闘が起こりました。</li>
-            </ul>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>艦隊</th>
+                        <th>自軍位置</th>
+                        <th>戦闘発生位置</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(params, hexNumber) in myBattleInformation" :key="hexNumber">
+                        <td>TF{{ params.fleet_number }}</td>
+                        <td>{{ hexNumber }}</td>
+                        <td>
+                            <ul class="list-unstyled">
+                                <li v-for="(battleHexNumber, index) in params.battle_hex_numbers" :key="index">{{ battleHexNumber }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             <button class="btn btn-warning" @click="nextTurn">戦闘終了</button>
         </div>
-
     </div>
 </template>
 
@@ -27,6 +43,7 @@
         props: {
             game: Object,
             player: Object,
+            battleInformation: Object,
         },
 
         data() {
@@ -34,15 +51,22 @@
                 isMyTurn: false,
                 hexNumbers: [],
                 message: '相手の入力が終わるまでしばらくお待ちください…',
-                ret: [],
                 turn: '',
+                myBattleInformation: [],
             }
         },
 
         created() {
             this.turn = this.game.turn;
-            if (this.game.turn.current_player_id === this.player.id) {
-                this.isMyTurn = true;
+
+            if (this.turn.status === 3) {
+                this.isMyTurn = false;
+                this.message = '判定結果';
+                this.myBattleInformation = _.get(this.battleInformation, this.player.id);
+            } else {
+                if (this.turn.current_player_id === this.player.id) {
+                    this.isMyTurn = true;
+                }
             }
         },
 
@@ -87,7 +111,7 @@
                 .listen('ZocResponse', (response) => {
                     this.message = '判定結果';
 
-                    this.ret = response.ret;
+                    this.myBattleInformation = _.get(response.battleInformation, this.player.id);
                 })
                 .listen('TurnFinished', (response) => {
                     if (response.turn.current_player_id === this.player.id) {
@@ -97,7 +121,7 @@
                     }
                     this.turn = response.turn;
                     this.message = '相手の入力が終わるまでしばらくお待ちください…';
-                    this.ret = [];
+                    this.myBattleInformation = [];
                 });
         }
     }

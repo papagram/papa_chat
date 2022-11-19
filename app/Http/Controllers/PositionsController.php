@@ -73,8 +73,8 @@ class PositionsController extends Controller
             $positions = Position::whereIn('fleet_id', $inputs['fleet_ids'])->where('turn_number', $turn->number)->get();
             $otherPlayer->load(['fleets']);
             $otherPositions = Position::whereIn('fleet_id', $otherPlayer->fleets->pluck('id'))->where('turn_number', $turn->number)->get();
-            $ret = app(ZocService::class, compact('positions', 'otherPositions'))->handle();
-            broadcast(app(ZocResponse::class, compact('ret')));
+            $battleInformation = app(ZocService::class, compact('positions', 'otherPositions'))->handle();
+            broadcast(app(ZocResponse::class, compact('battleInformation')));
         }
 
         return compact('turn');

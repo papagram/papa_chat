@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ZocService;
 use App\Game;
 use App\Player;
+use App\Position;
 use Illuminate\Http\Request;
 
 class PlayersController extends Controller
@@ -54,7 +56,19 @@ class PlayersController extends Controller
             }
         ]);
 
-        return view('players.show', compact('game', 'player'));
+        $battleInformation = [];
+        if ($game->turn->status === 3) {
+            // 自軍の艦隊位置を取得
+            $positions = Position::whereIn('fleet_id', $player->fleets->pluck('id'))->where('turn_number', $game->turn->number)->get();
+
+            // 敵軍の艦隊位置を取得
+            $otherPlayer = Player::with(['fleets'])->where('game_id', $game->id)->where('id', '<>', $player->id)->first();
+            $otherPositions = Position::with(['fleet'])->whereIn('fleet_id', $otherPlayer->fleets->pluck('id'))->where('turn_number', $game->turn->number)->get();
+
+            $battleInformation = app(ZocService::class, compact('positions', 'otherPositions'))->handle();
+        }
+
+        return view('players.show', compact('game', 'player', 'battleInformation'));
     }
 
     /**

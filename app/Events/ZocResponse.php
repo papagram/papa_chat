@@ -14,16 +14,16 @@ class ZocResponse implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $ret;
+    public $battleInformation;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($ret)
+    public function __construct($battleInformation)
     {
-        $this->ret = $ret;
+        $this->battleInformation = $battleInformation;
     }
 
     /**
