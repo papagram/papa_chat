@@ -145,7 +145,6 @@
                         _.each(response.positions, (position) => {
                             positions.push(position.hex_number);
                         });
-                        console.log(positions);
                         this.currentPositions[this.otherPlayer.id] = positions;
                     }
 
