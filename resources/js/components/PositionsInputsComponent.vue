@@ -4,7 +4,7 @@
             <div class="form-group row" v-for="(fleet, index) in player.fleets" :key="fleet.id" :class="{'has-error': hasError(index)}">
                 <label :for="'tf' + fleet.number" class="col-sm-2 col-form-label">TF{{ fleet.number }}</label>
                 <div class="col-sm-10">
-                    <input v-model="hexNumbers[index]" @change="validate(index)" type="number" name="position[hex_numbers][]" class="form-control" :id="'tf' + fleet.number" placeholder="ヘクス番号を入力">
+                    <input v-model="hexNumbers[index]" @change="validate(index)" type="number" name="position[hex_numbers][]" class="form-control" :id="'tf' + fleet.number" placeholder="ヘクス番号を入力" required>
                     <b><span v-if="hasError(index)" style="color: red;">そこには移動できません</span></b>
                 </div>
             </div>
@@ -98,6 +98,16 @@
 
         methods: {
             send() {
+                if (
+                    this.hexNumbers.length === 0 ||
+                    _.includes(this.hexNumbers, undefined) ||
+                    _.includes(this.hexNumbers, '') ||
+                    this.hexNumbers.length !== this.player.fleets.length
+                ) {
+                    alert('入力内容が不完全です。');
+                    return false;
+                }
+
                 axios.post('/positions', {
                     fleet_ids: _.map(this.player.fleets, 'id'),
                     hex_numbers: this.hexNumbers,
