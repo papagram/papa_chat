@@ -11,7 +11,7 @@
             <button type="submit" class="btn btn-primary" @click.prevent="send">決定</button>
         </form>
 
-        <p v-else>{{ message }}</p>
+        <p v-if="!isMyTurn && (turn.status === 1 || turn.status === 2)">{{ message }}</p>
 
         <div v-if="turn.status === 3">
             <table class="table table-bordered">
