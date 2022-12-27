@@ -8,7 +8,7 @@ class ZocService
     private $otherPositions;
     private $zoc;
     private $otherZoc;
-    private $ret;
+    private $ret = [];
 
     public function __construct($positions, $otherPositions)
     {
