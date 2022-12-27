@@ -14,6 +14,7 @@
         <p v-if="!isMyTurn && (turn.status === 1 || turn.status === 2)">{{ message }}</p>
 
         <div v-if="turn.status === 3">
+            <p>{{ message }}</p>
             <table class="table table-bordered">
                 <thead>
                     <tr>
