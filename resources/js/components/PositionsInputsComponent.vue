@@ -108,6 +108,17 @@
                     return false;
                 }
 
+                if (_.includes(this.errors, true)) {
+                    _.forEach(this.errors, (value, key) => {
+                        if (value) {
+                            alert(this.hexNumbers[key] + 'には移動できません');
+                        }
+                    });
+
+                    return false;
+                }
+
+
                 axios.post('/positions', {
                     fleet_ids: _.map(this.player.fleets, 'id'),
                     hex_numbers: this.hexNumbers,
